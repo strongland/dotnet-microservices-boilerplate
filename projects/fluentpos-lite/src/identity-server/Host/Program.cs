@@ -1,7 +1,8 @@
-using FluentPOS.Lite.IDS;
+﻿using FluentPOS.Lite.IDS;
 using FluentPOS.Lite.IDS.Data;
 using FSH.Core.Common;
 using FSH.Infrastructure;
+using FSH.Infrastructure.Auth;
 using FSH.Infrastructure.Logging.Serilog;
 using FSH.Persistence.EfCore;
 
@@ -11,6 +12,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddInfrastructureServices();
 builder.Services.RegisterContext<IdentityContext>(builder.Configuration, Database.PostgreSQL, "DefaultConnection");
 builder.Services.AddScoped<IDataSeeder, IdentityDataSeeder>();
+builder.Services.AddSingleton<IBankIdService, BankIdService>();
 builder.Services.AddIdentityServer(builder.Environment);
 var app = builder.Build();
 app.ConfigureMigrations<IdentityContext>(builder.Environment);

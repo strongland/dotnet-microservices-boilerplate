@@ -4,9 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 
-namespace FluentPOS.Lite.IDS.Models;
+namespace FSH.Infrastructure.Auth;
 
-public class ApplicationUser : IdentityUser<Guid>
+public class ApplicationUser : IdentityUser
 {
     public string TenantId { get; set; }
     public string? PersonalNumber { get; set; }
