@@ -8,5 +8,5 @@ public interface IUserService : ITransientService
     Task<TokenResponse> SwitchUserBackend(UserTokenRequest request, CancellationToken cancellationToken);
     Task<string> ResolveUsersBackendHostUrl(string personalNumber);
     Task<TokenResponse> GenerateAccessTokenInUserBackend(string personalNumber, CancellationToken cancellationToken);
-    Task<BankIdResponse> GetFromPersonalNumberAsync(string personalNumber, CancellationToken cancellationToken);
+    Task<BankIdResponses> GetFromPersonalNumberAsync(string personalNumber, CancellationToken cancellationToken);
 }

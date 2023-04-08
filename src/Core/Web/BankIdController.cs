@@ -1,5 +1,6 @@
 ﻿using FSH.Core.Common;
 using FSH.Core.Dto.BankId;
+using FSH.Core.Dto.CDCI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,22 +16,22 @@ public class BankIdController : BaseController {
 
     [AllowAnonymous]
     [HttpPost("auth")]
-    public async Task<BankIdResponse> Auth(BankIdAuth auth, CancellationToken cancellationToken) =>
+    public async Task<BankIdResponses> Auth(BankIdAuth auth, CancellationToken cancellationToken) =>
         await BankIdService.Auth(auth, cancellationToken);
 
     [AllowAnonymous]
     [HttpPost("sign")]
-    public async Task<BankIdResponse> Sign(BankIdSign sign, CancellationToken cancellationToken) =>
+    public async Task<BankIdResponses> Sign(BankIdSign sign, CancellationToken cancellationToken) =>
         await BankIdService.Sign(sign, cancellationToken);
 
     [AllowAnonymous]
     [HttpPost("collectqr")]
-    public async Task<BankIdResponse> CollectQr(BankIdCollect collectQr, CancellationToken cancellationToken) =>
+    public async Task<BankIdResponses> CollectQr(BankIdCollect collectQr, CancellationToken cancellationToken) =>
         await BankIdService.CollectQR(collectQr, cancellationToken);
 
     [AllowAnonymous]
     [HttpPost("collectstatus")]
-    public async Task<BankIdResponse> CollectStatus(BankIdCollect collectStatus, CancellationToken cancellationToken) =>
+    public async Task<BankIdResponses> CollectStatus(BankIdCollect collectStatus, CancellationToken cancellationToken) =>
         await BankIdService.CollectStatus(collectStatus, GetIpAddress(), GetOriginFromRequest(), cancellationToken);
 
     private string GetIpAddress() =>

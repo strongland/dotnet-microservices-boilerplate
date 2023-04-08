@@ -1,5 +1,6 @@
 ﻿using FSH.Core.Common;
 using FSH.Core.Dto.BankId;
+using FSH.Core.Dto.CDCI;
 using FSH.WebApi.Infrastructure.Common.Settings;
 using FSH.WebApi.Infrastructure.Helpers;
 using Microsoft.Extensions.Configuration;
@@ -20,37 +21,37 @@ public class BankIdService : IBankIdService {
         Runtime.SecuritySettings = config.GetSection("SecuritySettings").Get<SecuritySettings>();
     }
 
-    public async Task<BankIdResponse> Auth(BankIdAuth auth, CancellationToken cancellationToken) {
+    public async Task<BankIdResponses> Auth(BankIdAuth auth, CancellationToken cancellationToken) {
         auth.ApiUser = Runtime.SecuritySettings.BankId.ApiUser;
         auth.Password = Runtime.SecuritySettings.BankId.Password;
         auth.CompanyApiGuid = Runtime.SecuritySettings.BankId.CompanyApiGuid;
         var result = await new RestClient(Runtime.SecuritySettings.BankId.ApiUrl).POST("auth", JsonConvert.SerializeObject(auth));
-        return JsonConvert.DeserializeObject<BankIdResponse>(result.Content);
+        return JsonConvert.DeserializeObject<BankIdResponses>(result.Content);
     }
 
-    public async Task<BankIdResponse> Sign(BankIdSign sign, CancellationToken cancellationToken) {
+    public async Task<BankIdResponses> Sign(BankIdSign sign, CancellationToken cancellationToken) {
         sign.ApiUser = Runtime.SecuritySettings.BankId.ApiUser;
         sign.Password = Runtime.SecuritySettings.BankId.Password;
         sign.CompanyApiGuid = Runtime.SecuritySettings.BankId.CompanyApiGuid;
         var result = await new RestClient(Runtime.SecuritySettings.BankId.ApiUrl).POST("sign", JsonConvert.SerializeObject(sign));
-        return JsonConvert.DeserializeObject<BankIdResponse>(result.Content);
+        return JsonConvert.DeserializeObject<BankIdResponses>(result.Content);
     }
 
-    public async Task<BankIdResponse> CollectQR(BankIdCollect collectQr, CancellationToken cancellationToken) {
+    public async Task<BankIdResponses> CollectQR(BankIdCollect collectQr, CancellationToken cancellationToken) {
         collectQr.ApiUser = Runtime.SecuritySettings.BankId.ApiUser;
         collectQr.Password = Runtime.SecuritySettings.BankId.Password;
         collectQr.CompanyApiGuid = Runtime.SecuritySettings.BankId.CompanyApiGuid;
         var result = await new RestClient(Runtime.SecuritySettings.BankId.ApiUrl).POST("collectqr", JsonConvert.SerializeObject(collectQr));
-        return JsonConvert.DeserializeObject<BankIdResponse>(result.Content);
+        return JsonConvert.DeserializeObject<BankIdResponses>(result.Content);
     }
 
-    public async Task<BankIdResponse> CollectStatus(BankIdCollect collectStatus, string userIpAddress, string userRequestOrigin, CancellationToken cancellationToken) {
+    public async Task<BankIdResponses> CollectStatus(BankIdCollect collectStatus, string userIpAddress, string userRequestOrigin, CancellationToken cancellationToken) {
         collectStatus.ApiUser = Runtime.SecuritySettings.BankId.ApiUser;
         collectStatus.Password = Runtime.SecuritySettings.BankId.Password;
         collectStatus.CompanyApiGuid = Runtime.SecuritySettings.BankId.CompanyApiGuid;
 
         var resultJson = await new RestClient(Runtime.SecuritySettings.BankId.ApiUrl).POST("collectstatus", JsonConvert.SerializeObject(collectStatus));
-        var result = JsonConvert.DeserializeObject<BankIdResponse>(resultJson.Content);
+        var result = JsonConvert.DeserializeObject<BankIdResponses>(resultJson.Content);
 
         if (result != null && result.ApiCallResponse.Response != null && result.ApiCallResponse.Response.CompletionData != null) {
             if (result.ApiCallResponse.Response.CompletionData.User != null) {

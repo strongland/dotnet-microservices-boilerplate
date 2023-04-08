@@ -17,12 +17,4 @@ public class UserController : BaseController {
     [HttpPost("switchuserbackend")]
     public async Task<TokenResponse> SwitchUserBackend(UserTokenRequest request, CancellationToken cancellationToken) =>
         await UserService.SwitchUserBackend(request, cancellationToken);
-
-
-    private string GetIpAddress() =>
-    Request.Headers.ContainsKey("X-Forwarded-For")
-        ? Request.Headers["X-Forwarded-For"]
-        : HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString() ?? "N/A";
-
-    private string GetOriginFromRequest() => $"{Request.Scheme}://{Request.Host.Value}{Request.PathBase.Value}";
 }
