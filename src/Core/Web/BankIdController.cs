@@ -1,4 +1,5 @@
 ﻿using FSH.Core.Common;
+using FSH.Core.Dto.BankId;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

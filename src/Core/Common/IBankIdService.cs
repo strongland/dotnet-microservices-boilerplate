@@ -1,4 +1,4 @@
-﻿using FSH.Core.Web;
+﻿using FSH.Core.Dto.BankId;
 
 namespace FSH.Core.Common;
 

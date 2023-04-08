@@ -1,16 +1,10 @@
-﻿using FSH.WebApi.Infrastructure.Common.Settings;
+﻿using FSH.Core.Common;
+using FSH.Core.Dto.BankId;
+using FSH.WebApi.Infrastructure.Common.Settings;
 using FSH.WebApi.Infrastructure.Helpers;
 using Microsoft.Extensions.Configuration;
-using Serilog;
 using Newtonsoft.Json;
-using FSH.WebApi.Application.Identity.Tokens;
-using FSH.WebApi.Application.Identity.Users;
-using FSH.WebApi.Infrastructure.Identity;
-using Microsoft.AspNetCore.Identity;
-using FSH.WebApi.Shared.Multitenancy;
-using Isopoh.Cryptography.Argon2;
-using FSH.WebApi.Application.Identity.Roles;
-using Elasticsearch.Net.Specification.IndicesApi;
+using Serilog;
 
 namespace FSH.Infrastructure.Auth;
 
@@ -18,8 +12,11 @@ public class BankIdService : IBankIdService {
 
     private readonly ILogger Logger;
 
-    public BankIdService(IConfiguration config, ILogger logger) {
+    private readonly IUserService UserService;
+
+    public BankIdService(IConfiguration config, ILogger logger, IUserService userService) {
         Logger = logger;
+        UserService = userService;
         Runtime.SecuritySettings = config.GetSection("SecuritySettings").Get<SecuritySettings>();
     }
 
@@ -73,25 +70,31 @@ public class BankIdService : IBankIdService {
                     };
 
                     try {
-                        result.UserDetails = await UserService.GetFromPersonalNumberAsync(user.PersonalNumber, cancellationToken);
-                        result.TokenResponse = await TokenService.GetTokenAsync(
-                            new TokenRequest(
-                                result.UserDetails.Email,
-                                result.User.PersonalNumber,
-                                userIpAddress,
-                                userRequestOrigin
-                            ), userIpAddress, cancellationToken);
+                        var resolvedHostUrl = await UserService.ResolveUsersBackendHostUrl(user.PersonalNumber);
+                        //result.TokenResponse = await UserService.GenerateAccessTokenInUserBackend(user.PersonalNumber, cancellationToken);
+                        var userDetailResponse = await UserService.GetFromPersonalNumberAsync(user.PersonalNumber, cancellationToken);
+
+                        result.TokenResponse = userDetailResponse.TokenResponse;
+                        //result.TokenResponse = await TokenService.GetTokenAsync(
+                        //    new TokenRequest(
+                        //        result.UserDetails.Email,
+                        //        result.User.PersonalNumber,
+                        //        userIpAddress,
+                        //        userRequestOrigin
+                        //    ), userIpAddress, cancellationToken);
 
                         result.User.PersonalNumber = "REDACTED";
                         result.ApiCallResponse.Response.CompletionData.User.PersonalNumber = "REDACTED";
 
-                        var userRoles = await UserService.GetRolesAsync(result.UserDetails.Id.ToString(), cancellationToken);
-                        result.UserRolesAndPermissions = new List<RoleDto>();
-                        foreach (var role in userRoles) {
-                            if (role.Enabled) {
-                                result.UserRolesAndPermissions.Add(await RoleService.GetByIdWithPermissionsAsync(role.RoleId, cancellationToken));
-                            }
-                        }
+                        result.UserRolesAndPermissions = userDetailResponse.UserRolesAndPermissions;
+                        //var userRoles = await UserService.GetRolesAsync(result.UserDetails.Id.ToString(), cancellationToken);
+                        //result.UserRolesAndPermissions = new List<RoleDto>();
+                        //foreach (var role in userRoles) {
+                        //    if (role.Enabled) {
+                        //        result.UserRolesAndPermissions.Add(await RoleService.GetByIdWithPermissionsAsync(role.RoleId, cancellationToken));
+                        //    }
+                        //}
+
                         Console.WriteLine(JsonConvert.SerializeObject(result));
                     }
                     catch (Exception ex) {
