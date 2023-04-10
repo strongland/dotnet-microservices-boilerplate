@@ -1,13 +1,10 @@
-﻿using System;
-using RestSharp;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using System.Collections.Generic;
-using RestSharp.Authenticators;
-using FSH.WebApi.Infrastructure.Helpers;
+﻿using Newtonsoft.Json;
 using PipefyBackend;
+using RestSharp;
+using RestSharp.Authenticators;
 
-namespace FSH.WebApi.Infrastructure.Helpers {
+namespace FSH.WebApi.Infrastructure.Helpers
+{
     public class RestClient {
         private RestSharp.RestClient Client { get; set; } = new RestSharp.RestClient();
         private string BaseUrl { get; set; }

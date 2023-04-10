@@ -1,5 +1,4 @@
-using FSH.Infrastructure.Authentication.BankID.Models;
-using FSH.WebApi.Infrastructure.Persistence;
+﻿using FSH.Infrastructure.Auth;
 
 namespace FSH.WebApi.Infrastructure.Common.Settings;
 

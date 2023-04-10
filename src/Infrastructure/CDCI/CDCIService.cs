@@ -1,7 +1,9 @@
 ﻿using FSH.Core.Common;
 using FSH.Core.Dto.CDCI;
 using FSH.WebApi.Infrastructure.Common.Settings;
+using FSH.WebApi.Infrastructure.Helpers;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using Serilog;
 
 namespace FSH.Infrastructure.Auth;
@@ -12,12 +14,15 @@ public class CDCIService : ICDCIService {
 
     public CDCIService(IConfiguration config, ILogger logger) {
         Logger = logger;
-        Runtime.SecuritySettings = config.GetSection("SecuritySettings").Get<SecuritySettings>();
+        Runtime.CDCI = config.GetSection("CDCI").Get<CDCISettings>();
     }
 
-    public Task<CreateBackendResponse> CreateCustomerBackend(CreateBackendRequest request, CancellationToken cancellationToken)
+    public async Task<CreateBackendResponse> CreateCustomerBackend(CreateBackendRequest request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        
+        var result = await new RestClient("").POST(null,null);
+        var json = JsonConvert.DeserializeObject<CreateBackendResponse>(result.Content);
+        return json;
     }
 
     public Task<DeleteBackendResponse> DeleteCustomerBackend(DeleteBackendRequest request, CancellationToken cancellationToken)

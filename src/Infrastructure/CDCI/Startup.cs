@@ -1,14 +1,12 @@
 ﻿using FSH.WebApi.Infrastructure.Common.Settings;
 using FSH.WebApi.Infrastructure.Helpers;
-using FSH.WebApi.Infrastructure.Persistence;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Serilog;
-using static Org.BouncyCastle.Math.EC.ECCurve;
 
-namespace FSH.WebApi.Infrastructure.CDCI {
+namespace FSH.WebApi.Infrastructure.CDCI
+{
 
     internal static class Startup {
         private static IConfiguration Config { get; set; }

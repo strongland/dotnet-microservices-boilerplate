@@ -5,7 +5,6 @@ using FSH.Core.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-
 public class CDCIController : BaseController {
 
     private readonly ICDCIService CDCIService;
@@ -15,7 +14,11 @@ public class CDCIController : BaseController {
     }
 
     [AllowAnonymous]
-    [HttpPost("createcustomerbackend")]
+    [HttpGet]
+    public async Task<string> Hello() => "hello you";
+
+    [AllowAnonymous]
+    [HttpPost]
     public async Task<CreateBackendResponse> CreateCustomerBackend(CreateBackendRequest request, CancellationToken cancellationToken) =>
         await CDCIService.CreateCustomerBackend(request, cancellationToken);
 

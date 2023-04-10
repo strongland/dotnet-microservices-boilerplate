@@ -6,8 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace FSH.Core.Web;
 
 [ApiController]
-[Authorize]
-[Route("api/[controller]")]
+//[Authorize]
+[Route("[controller]/[action]")]
 public abstract class BaseController : ControllerBase
 {
     private ISender _mediator = null!;

@@ -1,6 +1,4 @@
-using FSH.WebApi.Infrastructure.Persistence;
-
-namespace FSH.WebApi.Infrastructure.Common.Settings;
+﻿namespace FSH.WebApi.Infrastructure.Common.Settings;
 
 public class CDCISettings {
 

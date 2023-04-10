@@ -1,6 +1,6 @@
 ﻿namespace FSH.Core.Dto.BankId;
 
-public class BankIdResponse
+public class BankIdResponses
 {
     public AuthResponse AuthResponse { get; set; }
     public ApiCallResponse ApiCallResponse { get; set; }
