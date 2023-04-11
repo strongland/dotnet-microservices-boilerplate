@@ -2,7 +2,7 @@
 
 public class CreateBackendResponse
 {
-    public string EndUserIp { get; set; }
+    public bool EnvironmentExists { get; set; }
 }
 
 public class DisableBackendResponse

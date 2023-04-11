@@ -14,10 +14,6 @@ public class CDCIController : BaseController {
     }
 
     [AllowAnonymous]
-    [HttpGet]
-    public async Task<string> Hello() => "hello you";
-
-    [AllowAnonymous]
     [HttpPost]
     public async Task<CreateBackendResponse> CreateCustomerBackend(CreateBackendRequest request, CancellationToken cancellationToken) =>
         await CDCIService.CreateCustomerBackend(request, cancellationToken);

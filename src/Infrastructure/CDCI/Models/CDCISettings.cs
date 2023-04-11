@@ -10,8 +10,8 @@ public class CDCISettings {
     public string ThisContainerName { get; set; }
     public string DatabaseName { get; set; }
 
-    public QoveryContainer FrontendContainer { get; set; }
-    public QoveryContainer ThisContainer { get; set; }
+    public QoveryContainerResult FrontendContainer { get; set; }
+    public QoveryContainerResult ThisContainer { get; set; }
     public QoveryEnvironment ThisEnvironment { get; set; }
-    public DatabaseContainer Database { get; set; }
+    public QoveryDatabaseContainerResult Database { get; set; }
 }

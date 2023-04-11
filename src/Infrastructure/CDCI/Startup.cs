@@ -19,7 +19,7 @@ namespace FSH.WebApi.Infrastructure.CDCI
 
             // Assemble CDCI settings object from Qovery Environment Variables and AppSettings.json
             Runtime.CDCI = config.GetSection("CDCISettings").Get<CDCISettings>();
-            Runtime.CDCI.Database = config.GetSection("DatabaseSettings").Get<DatabaseContainer>();
+            Runtime.CDCI.Database = config.GetSection("DatabaseSettings").Get<QoveryDatabaseContainerResult>();
             Runtime.CDCI.QoveryAPIToken = Environment.GetEnvironmentVariable("API_TOKEN_QOVERY");
             Runtime.CDCI.QoveryAPIToken = "Token qov_7503rXkpWTKaBDbQXUOWJb3EXBMtGqRkVAmgsxOiA5nEWqJWyD0VvOe_1329524952";
             _logger.Information($"FOUND QOVERY TOKEN {Runtime.CDCI.QoveryAPIToken}");
@@ -29,7 +29,7 @@ namespace FSH.WebApi.Infrastructure.CDCI
                 Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "LocalDevelopment"
                 || Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "AddivaDevelopment"
                 || Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "AbentorProd") {
-                Runtime.CDCI.FrontendContainer = new QoveryContainer() { HostName = config.GetSection(nameof(CorsSettings)).Get<CorsSettings>().LocalhostFrontendUrl, Name = "localhost" };
+                Runtime.CDCI.FrontendContainer = new QoveryContainerResult() { HostName = config.GetSection(nameof(CorsSettings)).Get<CorsSettings>().LocalhostFrontendUrl, Name = "localhost" };
                 Runtime.CDCI.ThisEnvironment = new QoveryEnvironment { Name = "localhost" };
             }
             else {
@@ -44,7 +44,7 @@ namespace FSH.WebApi.Infrastructure.CDCI
 
             // FETCH THIS CONTAINER
             var qoveryContainerId = Environment.GetEnvironmentVariable("QOVERY_CONTAINER_ID");
-            var container = new QoveryContainer { Id = qoveryContainerId };
+            var container = new QoveryContainerResult { Id = qoveryContainerId };
             _logger.Information($"FOUND CONTAINER ID {qoveryContainerId}");
             Runtime.CDCI.ThisContainer = GetQoveryContainer(container.Id);
             Runtime.CDCI.ThisEnvironment = GetQoveryEnvironment(Runtime.CDCI.ThisContainer.Environment.Id);
@@ -57,7 +57,7 @@ namespace FSH.WebApi.Infrastructure.CDCI
                 var thisBackendVariables = containerVariables.Where(x => x.service_name == Runtime.CDCI.ThisContainerName).ToList();
                 var databaseVariables = containerVariables.Where(x => x.service_name == Runtime.CDCI.DatabaseName).ToList();
 
-                Runtime.CDCI.FrontendContainer = new QoveryContainer {
+                Runtime.CDCI.FrontendContainer = new QoveryContainerResult {
                     Name = Runtime.CDCI.ThisContainer.Name,
                     HostName = $"https://{Runtime.CDCI.ThisEnvironment.Name}-{Runtime.CDCI.ThisProjectName}.netlify.app"
                 };
@@ -128,18 +128,18 @@ namespace FSH.WebApi.Infrastructure.CDCI
         }
 
         public static QoveryEnvironment GetQoveryEnvironment(string environmentId) {
-            var result = new RestClient(Runtime.CDCI.QoveryAPIUrl).TogglQoveryApiCall(RestSharp.Method.GET, $"/environment/{environmentId}", null, Runtime.CDCI.QoveryAPIToken).Result;
+            var result = new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(RestSharp.Method.GET, $"/environment/{environmentId}", null, Runtime.CDCI.QoveryAPIToken).Result;
             return JsonConvert.DeserializeObject<QoveryEnvironment>(result.Content);
         }
 
 
-        public static QoveryContainer GetQoveryContainer(string containerId) {
-            var result = new RestClient(Runtime.CDCI.QoveryAPIUrl).TogglQoveryApiCall(RestSharp.Method.GET, $"/container/{containerId}", null, Runtime.CDCI.QoveryAPIToken).Result;
-            return JsonConvert.DeserializeObject<QoveryContainer>(result.Content);
+        public static QoveryContainerResult GetQoveryContainer(string containerId) {
+            var result = new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(RestSharp.Method.GET, $"/container/{containerId}", null, Runtime.CDCI.QoveryAPIToken).Result;
+            return JsonConvert.DeserializeObject<QoveryContainerResult>(result.Content);
         }
 
         public static QoveryContainerVariablesResult GetQoveryContainerVariables(string containerId) {
-            var result = new RestClient(Runtime.CDCI.QoveryAPIUrl).TogglQoveryApiCall(RestSharp.Method.GET, $"/container/{containerId}/environmentVariable", null, Runtime.CDCI.QoveryAPIToken).Result;
+            var result = new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(RestSharp.Method.GET, $"/container/{containerId}/environmentVariable", null, Runtime.CDCI.QoveryAPIToken).Result;
             return JsonConvert.DeserializeObject<QoveryContainerVariablesResult>(result.Content);
         }
     }

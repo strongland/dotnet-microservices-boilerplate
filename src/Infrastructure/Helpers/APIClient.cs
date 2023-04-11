@@ -5,13 +5,13 @@ using RestSharp.Authenticators;
 
 namespace FSH.WebApi.Infrastructure.Helpers
 {
-    public class RestClient {
-        private RestSharp.RestClient Client { get; set; } = new RestSharp.RestClient();
+    public class APIClient {
+        private RestClient Client { get; set; } = new RestClient();
         private string BaseUrl { get; set; }
         private string Port { get; set; } = "";
         private string ContentType { get; set; } = "application/json";
 
-        public RestClient(string baseUrl, string ?contentType = null) { 
+        public APIClient(string baseUrl, string ?contentType = null) { 
             BaseUrl = baseUrl;
             if (contentType != null) ContentType = contentType;
         }
@@ -103,7 +103,7 @@ namespace FSH.WebApi.Infrastructure.Helpers
             }
             return result;
         }
-        public async Task<IRestResponse> TogglQoveryApiCall(Method method, string endpoint, string? jsonBody, string token)
+        public async Task<IRestResponse> QoveryApiCall(Method method, string endpoint, string? jsonBody, string token)
         {
             if (Port != "") BaseUrl = $"{BaseUrl}:{Port}/";
             Client = new RestSharp.RestClient(BaseUrl);

@@ -1,6 +1,6 @@
 ﻿namespace FSH.WebApi.Infrastructure.Common.Settings;
 
-public class QoveryContainer {
+public class QoveryContainerResult {
     public string Id { get; set; }
     public string Name { get; set; }
     public string HostName { get; set; }

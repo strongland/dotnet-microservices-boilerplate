@@ -1,6 +1,6 @@
 ﻿namespace FSH.WebApi.Infrastructure.Common.Settings;
 
-public class EnvironmentsResult {
+public class QoveryEnvironmentsResult {
     public List<QoveryEnvironment> Results { get; set; }
 }
 

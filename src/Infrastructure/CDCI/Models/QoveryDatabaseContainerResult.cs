@@ -1,8 +1,8 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace FSH.WebApi.Infrastructure.Common.Settings;
 
-public class DatabaseContainer : IValidatableObject
+public class QoveryDatabaseContainerResult : IValidatableObject
 {
     public string StorageProvider { get; set; }
     public bool UseHardCodedDBSettings { get; set; }
@@ -19,14 +19,14 @@ public class DatabaseContainer : IValidatableObject
         if (string.IsNullOrEmpty(Runtime.CDCI.Database.StorageProvider))
         {
             yield return new ValidationResult(
-                $"{nameof(DatabaseContainer)}.{nameof(Runtime.CDCI.Database.StorageProvider)} is not configured",
+                $"{nameof(QoveryDatabaseContainerResult)}.{nameof(Runtime.CDCI.Database.StorageProvider)} is not configured",
                 new[] { nameof(Runtime.CDCI.Database.StorageProvider) });
         }
 
         if (string.IsNullOrEmpty(Runtime.CDCI.Database.ConnectionString))
         {
             yield return new ValidationResult(
-                $"{nameof(DatabaseContainer)}.{nameof(Runtime.CDCI.Database.ConnectionString)} is not configured",
+                $"{nameof(QoveryDatabaseContainerResult)}.{nameof(Runtime.CDCI.Database.ConnectionString)} is not configured",
                 new[] { nameof(Runtime.CDCI.Database.ConnectionString) });
         }
     }

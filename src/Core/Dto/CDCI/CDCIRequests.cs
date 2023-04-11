@@ -2,7 +2,7 @@
 
 public class CreateBackendRequest
 {
-    public string EndUserIp { get; set; }
+    public string TenantName { get; set; }
 }
 
 public class DisableBackendRequest

@@ -25,7 +25,7 @@ public class BankIdService : IBankIdService {
         auth.ApiUser = Runtime.SecuritySettings.BankId.ApiUser;
         auth.Password = Runtime.SecuritySettings.BankId.Password;
         auth.CompanyApiGuid = Runtime.SecuritySettings.BankId.CompanyApiGuid;
-        var result = await new RestClient(Runtime.SecuritySettings.BankId.ApiUrl).POST("auth", JsonConvert.SerializeObject(auth));
+        var result = await new APIClient(Runtime.SecuritySettings.BankId.ApiUrl).POST("auth", JsonConvert.SerializeObject(auth));
         return JsonConvert.DeserializeObject<BankIdResponses>(result.Content);
     }
 
@@ -33,7 +33,7 @@ public class BankIdService : IBankIdService {
         sign.ApiUser = Runtime.SecuritySettings.BankId.ApiUser;
         sign.Password = Runtime.SecuritySettings.BankId.Password;
         sign.CompanyApiGuid = Runtime.SecuritySettings.BankId.CompanyApiGuid;
-        var result = await new RestClient(Runtime.SecuritySettings.BankId.ApiUrl).POST("sign", JsonConvert.SerializeObject(sign));
+        var result = await new APIClient(Runtime.SecuritySettings.BankId.ApiUrl).POST("sign", JsonConvert.SerializeObject(sign));
         return JsonConvert.DeserializeObject<BankIdResponses>(result.Content);
     }
 
@@ -41,7 +41,7 @@ public class BankIdService : IBankIdService {
         collectQr.ApiUser = Runtime.SecuritySettings.BankId.ApiUser;
         collectQr.Password = Runtime.SecuritySettings.BankId.Password;
         collectQr.CompanyApiGuid = Runtime.SecuritySettings.BankId.CompanyApiGuid;
-        var result = await new RestClient(Runtime.SecuritySettings.BankId.ApiUrl).POST("collectqr", JsonConvert.SerializeObject(collectQr));
+        var result = await new APIClient(Runtime.SecuritySettings.BankId.ApiUrl).POST("collectqr", JsonConvert.SerializeObject(collectQr));
         return JsonConvert.DeserializeObject<BankIdResponses>(result.Content);
     }
 
@@ -50,7 +50,7 @@ public class BankIdService : IBankIdService {
         collectStatus.Password = Runtime.SecuritySettings.BankId.Password;
         collectStatus.CompanyApiGuid = Runtime.SecuritySettings.BankId.CompanyApiGuid;
 
-        var resultJson = await new RestClient(Runtime.SecuritySettings.BankId.ApiUrl).POST("collectstatus", JsonConvert.SerializeObject(collectStatus));
+        var resultJson = await new APIClient(Runtime.SecuritySettings.BankId.ApiUrl).POST("collectstatus", JsonConvert.SerializeObject(collectStatus));
         var result = JsonConvert.DeserializeObject<BankIdResponses>(resultJson.Content);
 
         if (result != null && result.ApiCallResponse.Response != null && result.ApiCallResponse.Response.CompletionData != null) {
