@@ -62,7 +62,7 @@ public class CDCIService : ICDCIService {
             var environments = JsonConvert.DeserializeObject<QoveryEnvironmentsResult>(result.Content);
 
             foreach (var env in environments.Results) {
-                if (env.Name == request.TenantName) {
+                if (env.Name == request.EnvironmentName) {
                     Log.Debug($"FOUND EXISTING ENVIRONMENT: {env.Name} - ENVIRONMENT ID: {env.Id}");
                     return new CreateBackendResponse { EnvironmentExists = true };
                 }
@@ -73,10 +73,10 @@ public class CDCIService : ICDCIService {
         //#######################################################################
         //### IF IT DOES NOT EXIST, CREATE A NEW PROJECT ENVIRONMENT
         //#######################################################################
-        Log.Debug($"COULD NOT FIND AN EXISTING ENVIRONMENT CALLED {request.TenantName}... PROCEEDING");
+        Log.Debug($"COULD NOT FIND AN EXISTING ENVIRONMENT CALLED {request.EnvironmentName}... PROCEEDING");
 
         var newEnv = new QoveryEnvironmentRequest {
-            name = request.TenantName,
+            name = request.EnvironmentName,
             cluster = clusterId,
             mode = "PRODUCTION"
         };
