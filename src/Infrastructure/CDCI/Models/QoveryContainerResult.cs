@@ -4,5 +4,5 @@ public class QoveryContainerResult {
     public string Id { get; set; }
     public string Name { get; set; }
     public string HostName { get; set; }
-    public QoveryEnvironment Environment { get; set; }
+    public QoveryEnvironmentResult Environment { get; set; }
 }

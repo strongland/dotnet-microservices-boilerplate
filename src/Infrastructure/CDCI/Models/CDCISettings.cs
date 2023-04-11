@@ -12,6 +12,6 @@ public class CDCISettings {
 
     public QoveryContainerResult FrontendContainer { get; set; }
     public QoveryContainerResult ThisContainer { get; set; }
-    public QoveryEnvironment ThisEnvironment { get; set; }
+    public QoveryEnvironmentResult ThisEnvironment { get; set; }
     public QoveryDatabaseContainerResult Database { get; set; }
 }

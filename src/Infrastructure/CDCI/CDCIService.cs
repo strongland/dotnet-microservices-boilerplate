@@ -16,7 +16,8 @@ namespace FSH.Infrastructure.Auth;
 public class CDCIService : ICDCIService {
 
     private readonly ILogger Logger;
-    private QoveryEnvironment NewEnvironment { get; set; }
+    private QoveryEnvironmentResult NewEnvironment { get; set; }
+    private QoveryContainerResult NewContainer { get; set; }
 
     public CDCIService(IConfiguration config, ILogger logger) {
         Logger = logger;
@@ -53,7 +54,7 @@ public class CDCIService : ICDCIService {
 
         try {
             var result = await new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(Method.GET, $"project/$(projectId)/environment", null, Runtime.CDCI.QoveryAPIToken);
-            var environments = JsonConvert.DeserializeObject<List<QoveryEnvironment>>(result.Content);
+            var environments = JsonConvert.DeserializeObject<List<QoveryEnvironmentResult>>(result.Content);
 
             foreach (var env in environments) {
                 if (env.Name == request.TenantName) {
@@ -77,7 +78,7 @@ public class CDCIService : ICDCIService {
 
         try {
             var createEnvResult = await new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(Method.POST, $"project/$(projectId)/environment", null, Runtime.CDCI.QoveryAPIToken);
-            NewEnvironment = JsonConvert.DeserializeObject<QoveryEnvironment>(createEnvResult.Content);
+            NewEnvironment = JsonConvert.DeserializeObject<QoveryEnvironmentResult>(createEnvResult.Content);
             Log.Debug(JsonConvert.SerializeObject(NewEnvironment, Formatting.Indented));
         }
         catch(Exception e) { Log.Debug(e.Message); if (e.InnerException != null) Log.Debug(e.InnerException.Message); }
@@ -109,11 +110,10 @@ public class CDCIService : ICDCIService {
             }
         };
 
-        try
-        {
-            var createEnvResult = await new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(Method.POST, $"environment/{NewEnvironment.Id})/container", JsonConvert.SerializeObject(newContainer), Runtime.CDCI.QoveryAPIToken);
-            var environment = JsonConvert.DeserializeObject<QoveryEnvironment>(createEnvResult.Content);
-            Log.Debug(JsonConvert.SerializeObject(environment, Formatting.Indented));
+        try {
+            var createContainerResult = await new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(Method.POST, $"environment/{NewEnvironment.Id})/container", JsonConvert.SerializeObject(newContainer), Runtime.CDCI.QoveryAPIToken);
+            NewContainer = JsonConvert.DeserializeObject<QoveryContainerResult>(createContainerResult.Content);
+            Log.Debug(JsonConvert.SerializeObject(NewContainer, Formatting.Indented));
         }
         catch (Exception e) { Log.Debug(e.Message); if (e.InnerException != null) Log.Debug(e.InnerException.Message); }
 
@@ -123,67 +123,35 @@ public class CDCIService : ICDCIService {
         //### CHECK CONTAINER STATE, WAIT FOR IT TO BECOME AVAILABLE
         //#########################################################################
 
-        Log.Debug($"CREATiNG A NEW BACKEND CONTAINER FROM LATEST DOCKER IMAGE IN AWS");
+        Log.Debug($"CHECK CONTAINER STATE, WAIT FOR IT TO BECOME AVAILABLE");
 
-        var newContainer = new QoveryContainerRequest
-        {
-            Name = request.TenantName,
-            Registry_id = registryId,
-            Image_name = prodContainerImageName,
-            Tag = GetLatestProductionTag(),
-            Cpu = containerCpu,
-            Memory = containerRAM,
-            Min_running_instances = minNodes,
-            Max_running_instances = maxNodes,
-            Ports = new List<QoveryContainerPort> { new QoveryContainerPort {
-                    Name = "api",
-                    Internal_port = containerInternalPort,
-                    External_port = containerExternalPort,
-                    Publicly_accessible = true,
-                    Is_default = true,
-                    Protocol = "HTTP"
+        try {
+
+            Task.Run(async () => {
+                string environmentState = "";
+                while (environmentState != "DEPLOYING" || environmentState != "BUILDING" || environmentState != "CANCELING" || environmentState != "DELETING" || environmentState != "DELETE_QUEUED")
+                {
+                    try
+                    {
+                        Log.Debug($"GET CONTAINER STATE for {NewContainer.Id}");
+                        var createEnvResult = await new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(Method.GET, $"environment/{NewEnvironment.Id})/status", null, Runtime.CDCI.QoveryAPIToken);
+                        environmentState = JsonConvert.DeserializeObject<QoveryEnvironmentStatusResult>(createEnvResult.Content).State;
+                        Log.Debug($"CONTAINER STATE: {environmentState}");
+                        if (environmentState == "DEPLOYING" || environmentState == "BUILDING" || environmentState == "CANCELING" || environmentState == "DELETING" || environmentState == "DELETE_QUEUED") {
+                            Log.Debug("CONTAINER STATE IS $environmentState. LET'S WAIT 15 SECONDS AND TRY AGAIN"
+                        }
+                        Thread.Sleep(15000);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Debug(e.Message);
+                        if (e.InnerException != null) Log.Debug(e.InnerException.Message);
+                    }
                 }
-            }
-        };
-
-        try
-        {
-            var createEnvResult = await new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(Method.POST, $"environment/{NewEnvironment.Id})/container", JsonConvert.SerializeObject(newContainer), Runtime.CDCI.QoveryAPIToken);
-            var environment = JsonConvert.DeserializeObject<QoveryEnvironment>(createEnvResult.Content);
-            Log.Debug(JsonConvert.SerializeObject(environment, Formatting.Indented));
+            });
         }
         catch (Exception e) { Log.Debug(e.Message); if (e.InnerException != null) Log.Debug(e.InnerException.Message); }
 
-
-        if ("$(containerId)" - ne "create_container") {
-                    Log.Debug("GET CONTAINER STATE for $(containerId)"
-
-
-                var $url = "https://api.qovery.com/environment/$(environmentId)/status"
-                var $head = @{ Authorization = "$(qoveryToken)" }
-                    try
-                    {
-                        Log.Debug($url
-                        $environment = Invoke - RestMethod - Uri $url - Method Get - Headers $head - ContentType application / json
-                        $environmentState = $environment."state"
-                        # Pause for 5 seconds per loop
-                    while (($environmentState - eq "DEPLOYING") -Or($environmentState - eq "BUILDING") - Or($environmentState - eq "CANCELING") - Or($environmentState - eq "DELETING") - Or($environmentState - eq "DELETE_QUEUED")) {
-                            Log.Debug("CONTAINER STATE IS $environmentState. LET'S WAIT 15 SECONDS AND TRY AGAIN"
-                        # Sleep 5 seconds
-                        Start - Sleep - s 15
-                        $containers = Invoke - RestMethod - Uri $url - Method Get - Headers $head - ContentType application / json
-                        $environmentState = $containers."state"
-                    }
-                        Log.Debug("CONTAINER STATE: $environmentState"
-                        $containers | select *
-                        Log.Debug("##vso[task.setvariable variable=environmentState]$environmentState"
-                    }
-                    catch
-                    {
-                        Log.Debug("ERROR"
-                        $_.Exception | select *
-                      }
-                }
 
         //#######################################################################
         //### SET ENVIRONMENT VARIABLES AND ALIASES
@@ -215,7 +183,7 @@ public class CDCIService : ICDCIService {
         try
         {
             var createEnvResult = await new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(Method.POST, $"environment/{NewEnvironment.Id})/container", JsonConvert.SerializeObject(newContainer), Runtime.CDCI.QoveryAPIToken);
-            var environment = JsonConvert.DeserializeObject<QoveryEnvironment>(createEnvResult.Content);
+            var environment = JsonConvert.DeserializeObject<QoveryEnvironmentResult>(createEnvResult.Content);
             Log.Debug(JsonConvert.SerializeObject(environment, Formatting.Indented));
         }
         catch (Exception e) { Log.Debug(e.Message); if (e.InnerException != null) Log.Debug(e.InnerException.Message); }
@@ -277,7 +245,7 @@ public class CDCIService : ICDCIService {
         try
         {
             var createEnvResult = await new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(Method.POST, $"environment/{NewEnvironment.Id})/container", JsonConvert.SerializeObject(newContainer), Runtime.CDCI.QoveryAPIToken);
-            var environment = JsonConvert.DeserializeObject<QoveryEnvironment>(createEnvResult.Content);
+            var environment = JsonConvert.DeserializeObject<QoveryEnvironmentResult>(createEnvResult.Content);
             Log.Debug(JsonConvert.SerializeObject(environment, Formatting.Indented));
         }
         catch (Exception e) { Log.Debug(e.Message); if (e.InnerException != null) Log.Debug(e.InnerException.Message); }

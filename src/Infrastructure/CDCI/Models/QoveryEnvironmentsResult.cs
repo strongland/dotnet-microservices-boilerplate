@@ -1,7 +1,7 @@
 ﻿namespace FSH.WebApi.Infrastructure.Common.Settings;
 
 public class QoveryEnvironmentsResult {
-    public List<QoveryEnvironment> Results { get; set; }
+    public List<QoveryEnvironmentResult> Results { get; set; }
 }
 
 public class CloudProvider {
@@ -13,7 +13,7 @@ public class Project {
     public string Id { get; set; }
 }
 
-public class QoveryEnvironment {
+public class QoveryEnvironmentResult {
     public string Id { get; set; }
     public DateTime Created_at { get; set; }
     public DateTime Updated_at { get; set; }

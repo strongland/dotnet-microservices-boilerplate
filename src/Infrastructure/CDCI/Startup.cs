@@ -30,7 +30,7 @@ namespace FSH.WebApi.Infrastructure.CDCI
                 || Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "AddivaDevelopment"
                 || Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "AbentorProd") {
                 Runtime.CDCI.FrontendContainer = new QoveryContainerResult() { HostName = config.GetSection(nameof(CorsSettings)).Get<CorsSettings>().LocalhostFrontendUrl, Name = "localhost" };
-                Runtime.CDCI.ThisEnvironment = new QoveryEnvironment { Name = "localhost" };
+                Runtime.CDCI.ThisEnvironment = new QoveryEnvironmentResult { Name = "localhost" };
             }
             else {
                 ResolveQoveryEnvironmentVariablesAndSecrets(); }
@@ -127,9 +127,9 @@ namespace FSH.WebApi.Infrastructure.CDCI
             }
         }
 
-        public static QoveryEnvironment GetQoveryEnvironment(string environmentId) {
+        public static QoveryEnvironmentResult GetQoveryEnvironment(string environmentId) {
             var result = new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(RestSharp.Method.GET, $"/environment/{environmentId}", null, Runtime.CDCI.QoveryAPIToken).Result;
-            return JsonConvert.DeserializeObject<QoveryEnvironment>(result.Content);
+            return JsonConvert.DeserializeObject<QoveryEnvironmentResult>(result.Content);
         }
 
 
