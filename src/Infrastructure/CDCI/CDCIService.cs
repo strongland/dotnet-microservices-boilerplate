@@ -18,6 +18,7 @@ public class CDCIService : ICDCIService {
     private readonly ILogger Logger;
     private QoveryEnvironmentResult NewEnvironment { get; set; }
     private QoveryContainerResult NewContainer { get; set; }
+    private string LatestProductionTag { get; set; }
 
     public CDCIService(IConfiguration config, ILogger logger) {
         Logger = logger;
@@ -48,6 +49,12 @@ public class CDCIService : ICDCIService {
         var clusterId = "ce5e20e8-fb97-441a-9a54-3c0dcdf8922b"; // settings
         var prodContainerImageName = "dashboard-backend-prod";
 
+
+        //#######################################################################
+        //### GET LATEST PRODUCTION TAG
+        //#######################################################################
+        LatestProductionTag = await GetLatestProductionTag();
+
         //#######################################################################
         //### CHECK IF ENVIRONMENT EXISTS
         //#######################################################################
@@ -66,6 +73,7 @@ public class CDCIService : ICDCIService {
         }
         catch (Exception e) { Log.Debug(e.Message); if (e.InnerException != null) Log.Debug(e.InnerException.Message); }
 
+        //#######################################################################
         //### IF IT DOES NOT EXIST, CREATE A NEW PROJECT ENVIRONMENT
         //#######################################################################
         Log.Debug($"COULD NOT FIND AN EXISTING ENVIRONMENT CALLED {request.TenantName}... PROCEEDING");
@@ -94,7 +102,7 @@ public class CDCIService : ICDCIService {
             Name = request.TenantName,
             Registry_id = registryId,
             Image_name = prodContainerImageName,
-            Tag = GetLatestProductionTag(),
+            Tag = LatestProductionTag,
             Cpu = containerCpu,
             Memory = containerRAM,
             Min_running_instances = minNodes,
@@ -153,137 +161,83 @@ public class CDCIService : ICDCIService {
         catch (Exception e) { Log.Debug(e.Message); if (e.InnerException != null) Log.Debug(e.InnerException.Message); }
 
 
+
         //#######################################################################
         //### SET ENVIRONMENT VARIABLES AND ALIASES
         //#######################################################################
 
-        Log.Debug($"CREATiNG A NEW BACKEND CONTAINER FROM LATEST DOCKER IMAGE IN AWS");
+        //Log.Debug($"CREATiNG A NEW BACKEND CONTAINER FROM LATEST DOCKER IMAGE IN AWS");
 
-        var newContainer = new QoveryContainerRequest
-        {
-            Name = request.TenantName,
-            Registry_id = registryId,
-            Image_name = prodContainerImageName,
-            Tag = GetLatestProductionTag(),
-            Cpu = containerCpu,
-            Memory = containerRAM,
-            Min_running_instances = minNodes,
-            Max_running_instances = maxNodes,
-            Ports = new List<QoveryContainerPort> { new QoveryContainerPort {
-                    Name = "api",
-                    Internal_port = containerInternalPort,
-                    External_port = containerExternalPort,
-                    Publicly_accessible = true,
-                    Is_default = true,
-                    Protocol = "HTTP"
-                }
-            }
-        };
+        //var newContainer = new QoveryContainerRequest
+        //{
+        //    Name = request.TenantName,
+        //    Registry_id = registryId,
+        //    Image_name = prodContainerImageName,
+        //    Tag = GetLatestProductionTag(),
+        //    Cpu = containerCpu,
+        //    Memory = containerRAM,
+        //    Min_running_instances = minNodes,
+        //    Max_running_instances = maxNodes,
+        //    Ports = new List<QoveryContainerPort> { new QoveryContainerPort {
+        //            Name = "api",
+        //            Internal_port = containerInternalPort,
+        //            External_port = containerExternalPort,
+        //            Publicly_accessible = true,
+        //            Is_default = true,
+        //            Protocol = "HTTP"
+        //        }
+        //    }
+        //};
 
-        try
-        {
-            var createEnvResult = await new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(Method.POST, $"environment/{NewEnvironment.Id})/container", JsonConvert.SerializeObject(newContainer), Runtime.CDCI.QoveryAPIToken);
-            var environment = JsonConvert.DeserializeObject<QoveryEnvironmentResult>(createEnvResult.Content);
-            Log.Debug(JsonConvert.SerializeObject(environment, Formatting.Indented));
-        }
-        catch (Exception e) { Log.Debug(e.Message); if (e.InnerException != null) Log.Debug(e.InnerException.Message); }
+        //try
+        //{
+        //    var createEnvResult = await new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(Method.POST, $"container/$(containerId)/secret", JsonConvert.SerializeObject(newContainer), Runtime.CDCI.QoveryAPIToken);
+        //    var environment = JsonConvert.DeserializeObject<QoveryEnvironmentResult>(createEnvResult.Content);
+        //    Log.Debug(JsonConvert.SerializeObject(environment, Formatting.Indented));
+        //}
+        //catch (Exception e) { Log.Debug(e.Message); if (e.InnerException != null) Log.Debug(e.InnerException.Message); }
 
 
-        if condition: ne(variables['containerId'], 'create_container')
+        //if condition: ne(variables['containerId'], 'create_container')
 
-                Log.Debug-Host "SET QOVERY API SECRET for $(containerId)"
+        //        Log.Debug-Host "SET QOVERY API SECRET for $(containerId)"
 
-                var $url = "https://api.qovery.com/container/$(containerId)/secret"
-                var $head = @{ Authorization = "$(qoveryToken)" }
-        var $body = @{
-                    "key" = "API_TOKEN_QOVERY"
-                  "value" = "$(qoveryToken)"
-                } | ConvertTo - Json
-                Log.Debug($body
+        //        var $url = "https://api.qovery.com/container/$(containerId)/secret"
+        //        var $head = @{ Authorization = "$(qoveryToken)" }
+        //var $body = @{
+        //            "key" = "API_TOKEN_QOVERY"
+        //          "value" = "$(qoveryToken)"
+        //        } | ConvertTo - Json
+        //        Log.Debug($body
 
-                try
-                {
-                    Log.Debug($url
-                    $secretResponse = Invoke - RestMethod - Uri $url - Method Post - Body $body - Headers $head - ContentType application / json
-                    $secretResponse.PSObject.Properties.Value | foreach-object {
-                      $_ | select *
-                    }
-                }
-                catch
-                {
-                    Log.Debug("ERROR"
-                    $_.Exception | select *
-                  }
+        //        try
+        //        {
+        //            Log.Debug($url
+        //            $secretResponse = Invoke - RestMethod - Uri $url - Method Post - Body $body - Headers $head - ContentType application / json
+        //            $secretResponse.PSObject.Properties.Value | foreach-object {
+        //              $_ | select *
+        //            }
+        //        }
+        //        catch
+        //        {
+        //            Log.Debug("ERROR"
+        //            $_.Exception | select *
+        //          }
 
         //#######################################################################
         //### DEPLOY THE CONTAINER INTO THE EKS CLUSTER
         //#######################################################################
 
-        Log.Debug($"CREATiNG A NEW BACKEND CONTAINER FROM LATEST DOCKER IMAGE IN AWS");
+        Log.Debug($"DEPLOY THE CONTAINER {NewContainer.Id} INTO THE EKS CLUSTER");
 
-        var newContainer = new QoveryContainerRequest
-        {
-            Name = request.TenantName,
-            Registry_id = registryId,
-            Image_name = prodContainerImageName,
-            Tag = GetLatestProductionTag(),
-            Cpu = containerCpu,
-            Memory = containerRAM,
-            Min_running_instances = minNodes,
-            Max_running_instances = maxNodes,
-            Ports = new List<QoveryContainerPort> { new QoveryContainerPort {
-                    Name = "api",
-                    Internal_port = containerInternalPort,
-                    External_port = containerExternalPort,
-                    Publicly_accessible = true,
-                    Is_default = true,
-                    Protocol = "HTTP"
-                }
-            }
-        };
+        var deployment = new QoveryContainerRequest { Image_tag = LatestProductionTag };
 
-        try
-        {
-            var createEnvResult = await new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(Method.POST, $"environment/{NewEnvironment.Id})/container", JsonConvert.SerializeObject(newContainer), Runtime.CDCI.QoveryAPIToken);
+        try {
+            var createEnvResult = await new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(Method.POST, $"environment/{NewEnvironment.Id})/container", JsonConvert.SerializeObject(deployment), Runtime.CDCI.QoveryAPIToken);
             var environment = JsonConvert.DeserializeObject<QoveryEnvironmentResult>(createEnvResult.Content);
             Log.Debug(JsonConvert.SerializeObject(environment, Formatting.Indented));
         }
         catch (Exception e) { Log.Debug(e.Message); if (e.InnerException != null) Log.Debug(e.InnerException.Message); }
-
-
-        Log.Debug("CONTAINER ID: $(containerId)"
-                Log.Debug("ENVIRONMENT STATE: $(environmentState)"
-                if (("$(containerId)" - ne "create_container") -And("$(environmentState)" - ne "DEPLOYING")) {
-                    Log.Debug("I found $(containerId) already created, let's redeploy the image"
-                  Log.Debug("DEPLOY CONTAINER"
-
-                  var $url = "https://api.qovery.com/container/$(containerId)/deploy"
-                  var $head = @{ Authorization = "$(qoveryToken)" }
-            var $body = @{
-            var $body = @{
-                        "image_tag" = "$(Build.SourceVersion)"
-                    } | ConvertTo - Json
-                  try
-                    {
-                        Log.Debug($body
-                      Log.Debug($url
-                      $deployment = Invoke - RestMethod - Uri $url - Method Post - Headers $head - Body $body - ContentType application / json
-                      $deployment | select *
-                  }
-                    catch
-                    {
-                        Log.Debug("ERROR"
-                      $_.Exception | select *
-                    }
-                }
-                else
-                {
-                    Log.Debug("Epic doom, something is broken with getting the containerId or the container is busy deploying"
-                }
-
-        var result = await new RestClient("").POST(null,null);
-        var json = JsonConvert.DeserializeObject<CreateBackendResponse>(result.Content);
-        return json;
     }
 
     public Task<DeleteBackendResponse> DeleteCustomerBackend(DeleteBackendRequest request, CancellationToken cancellationToken)
@@ -297,6 +251,11 @@ public class CDCIService : ICDCIService {
     }
     
     public async Task<string> GetLatestProductionTag() {
-
+        try {
+            var createEnvResult = await new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(Method.POST, $"environment/{NewEnvironment.Id})/container", JsonConvert.SerializeObject(deployment), Runtime.CDCI.QoveryAPIToken);
+            var environment = JsonConvert.DeserializeObject<QoveryEnvironmentResult>(createEnvResult.Content);
+            Log.Debug(JsonConvert.SerializeObject(environment, Formatting.Indented));
+        }
+        catch (Exception e) { Log.Debug(e.Message); if (e.InnerException != null) Log.Debug(e.InnerException.Message); }
     }
 }

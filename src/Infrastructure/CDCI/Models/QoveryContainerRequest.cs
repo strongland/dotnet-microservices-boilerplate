@@ -4,6 +4,7 @@ public class QoveryContainerRequest {
     public string Name { get; set; }
     public string Registry_id { get; set; }
     public string Image_name { get; set; }
+    public string Image_tag { get; set; }
     public string Tag { get; set; }
     public int Cpu { get; set; }
     public int Memory { get; set; }
