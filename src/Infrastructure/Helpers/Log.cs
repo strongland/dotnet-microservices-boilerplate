@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using System;
 
-namespace PipefyBackend {
+namespace FSH.WebApi.Infrastructure.Helpers {
     public static class Log {
 
         public static void Info(string message, string ?tag = null) {

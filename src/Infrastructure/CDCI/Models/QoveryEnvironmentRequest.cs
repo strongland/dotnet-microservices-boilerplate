@@ -2,7 +2,7 @@
 
 public class QoveryEnvironmentRequest
 {
-    public string Name { get; set; }
-    public string Cluster { get; set; } // cluster ID
-    public string Mode { get; set; }
+    public string name { get; set; }
+    public string cluster { get; set; } // cluster ID
+    public string mode { get; set; }
 }

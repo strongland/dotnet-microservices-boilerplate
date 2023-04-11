@@ -11,7 +11,7 @@ namespace FSH.WebApi.Infrastructure.CDCI
     internal static class Startup {
         private static IConfiguration Config { get; set; }
 
-        private static readonly ILogger _logger = Log.ForContext(typeof(Startup));
+        private static readonly ILogger _logger = Serilog.Log.ForContext(typeof(Startup));
         private static string DatabaseInstanceEnvVariableShortID { get; set; }
 
         internal static IServiceCollection AddCDCI(this IServiceCollection services, IConfiguration config) {

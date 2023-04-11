@@ -8,9 +8,9 @@ public class CreateBackendResponse {
 
 public class DisableBackendResponse
 {
-    public string EndUserIp { get; set; }
-    public string UserVisibleData { get; set; }
-    public string UserNonVisibleData { get; set; }
+    public string EnvironmentName { get; set; }
+    public string State { get; set; }
+    public string Message { get; set; }
 }
 
 public class DeleteBackendResponse

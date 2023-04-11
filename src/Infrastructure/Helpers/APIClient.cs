@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using PipefyBackend;
 using RestSharp;
 using RestSharp.Authenticators;
 

@@ -7,7 +7,7 @@ public class CreateBackendRequest
 
 public class DisableBackendRequest
 {
-    public string EndUserIp { get; set; }
+    public string EnvironmentName { get; set; }
 }
 
 public class DeleteBackendRequest

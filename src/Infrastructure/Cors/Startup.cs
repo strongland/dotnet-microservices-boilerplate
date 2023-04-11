@@ -12,7 +12,7 @@ namespace FSH.WebApi.Infrastructure.Cors {
 
         private static CorsSettings CorsSettings { get; set; }
         private static string CorsPolicy = nameof(CorsPolicy);
-        private static readonly ILogger _logger = Log.ForContext(typeof(Startup));
+        private static readonly ILogger _logger = Serilog.Log.ForContext(typeof(Startup));
 
         internal static IServiceCollection AddCorsPolicy(this IServiceCollection services, IConfiguration config) {
 
