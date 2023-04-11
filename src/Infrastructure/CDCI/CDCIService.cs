@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using FSH.Core.Common;
 using FSH.Core.Dto.CDCI;
 using FSH.WebApi.Infrastructure.Common.Settings;
@@ -16,8 +17,11 @@ namespace FSH.Infrastructure.Auth;
 public class CDCIService : ICDCIService {
 
     private readonly ILogger Logger;
+    private string QoveryProjectId { get; set; }
+    private string QoveryProductionContainerName { get; set; }
     private QoveryEnvironmentResult NewEnvironment { get; set; }
     private QoveryContainerResult NewContainer { get; set; }
+    private QoveryEnvironmentResult DeployedEnvironment { get; set; }
     private string LatestProductionTag { get; set; }
 
     public CDCIService(IConfiguration config, ILogger logger) {
@@ -32,7 +36,8 @@ public class CDCIService : ICDCIService {
         //#######################################################################
 
         //## THESE VALUES NEEDS TO BE CONFIGURED FOR EACH PROJECT
-        var projectId = "9d0a2ead-2060-47ff-a0fd-1eebaeb2e0f4"; // settings
+        QoveryProjectId = "9d0a2ead-2060-47ff-a0fd-1eebaeb2e0f4"; // settings
+        QoveryProductionContainerName = "backend-dashboard"; // settings
         var registryId = "bd834fff-5eb0-4105-992a-e8bbb7cdac24"; // settings
 
         //## CONTAINER RESOURCES, 1 CPU = 1000, RAM = Megabytes
@@ -54,6 +59,7 @@ public class CDCIService : ICDCIService {
         //### GET LATEST PRODUCTION TAG
         //#######################################################################
         LatestProductionTag = await GetLatestProductionTag();
+        if (LatestProductionTag == String.Empty) { return new CreateBackendResponse { FoundProductionTag = false }; }
 
         //#######################################################################
         //### CHECK IF ENVIRONMENT EXISTS
@@ -146,7 +152,7 @@ public class CDCIService : ICDCIService {
                         environmentState = JsonConvert.DeserializeObject<QoveryEnvironmentStatusResult>(createEnvResult.Content).State;
                         Log.Debug($"CONTAINER STATE: {environmentState}");
                         if (environmentState == "DEPLOYING" || environmentState == "BUILDING" || environmentState == "CANCELING" || environmentState == "DELETING" || environmentState == "DELETE_QUEUED") {
-                            Log.Debug("CONTAINER STATE IS $environmentState. LET'S WAIT 15 SECONDS AND TRY AGAIN"
+                            Log.Debug("CONTAINER STATE IS $environmentState. LET'S WAIT 15 SECONDS AND TRY AGAIN");
                         }
                         Thread.Sleep(15000);
                     }
@@ -234,10 +240,16 @@ public class CDCIService : ICDCIService {
 
         try {
             var createEnvResult = await new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(Method.POST, $"environment/{NewEnvironment.Id})/container", JsonConvert.SerializeObject(deployment), Runtime.CDCI.QoveryAPIToken);
-            var environment = JsonConvert.DeserializeObject<QoveryEnvironmentResult>(createEnvResult.Content);
-            Log.Debug(JsonConvert.SerializeObject(environment, Formatting.Indented));
+            DeployedEnvironment = JsonConvert.DeserializeObject<QoveryEnvironmentResult>(createEnvResult.Content);
+            Log.Debug(JsonConvert.SerializeObject(DeployedEnvironment, Formatting.Indented));
         }
         catch (Exception e) { Log.Debug(e.Message); if (e.InnerException != null) Log.Debug(e.InnerException.Message); }
+
+        return new CreateBackendResponse {
+            FoundProductionTag = true,
+            EnvironmentExists = true,
+            BackendEnvironmentId = DeployedEnvironment.Id
+        };
     }
 
     public Task<DeleteBackendResponse> DeleteCustomerBackend(DeleteBackendRequest request, CancellationToken cancellationToken)
@@ -252,10 +264,26 @@ public class CDCIService : ICDCIService {
     
     public async Task<string> GetLatestProductionTag() {
         try {
-            var createEnvResult = await new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(Method.POST, $"environment/{NewEnvironment.Id})/container", JsonConvert.SerializeObject(deployment), Runtime.CDCI.QoveryAPIToken);
-            var environment = JsonConvert.DeserializeObject<QoveryEnvironmentResult>(createEnvResult.Content);
-            Log.Debug(JsonConvert.SerializeObject(environment, Formatting.Indented));
+            // Get list of environments
+            var environmentsResult = await new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(Method.GET, $"project/{QoveryProjectId}/environment", null,  Runtime.CDCI.QoveryAPIToken);
+            var environmentList = JsonConvert.DeserializeObject<List<QoveryEnvironmentResult>>(environmentsResult.Content);
+            Log.Debug(JsonConvert.SerializeObject(environmentList, Formatting.Indented));
+
+            foreach (var environment in environmentList ) {
+                if (environment.Name == "prod") {
+                    // Get list of containers
+                    var containersResult = await new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(Method.GET, $"environment/{environment.Id}/container", null, Runtime.CDCI.QoveryAPIToken);
+                    var containersList = JsonConvert.DeserializeObject<List<QoveryContainerResult>>(containersResult.Content);
+                    Log.Debug(JsonConvert.SerializeObject(environmentList, Formatting.Indented));
+
+                    foreach (var container in containersList ) {
+                        if (container.Name == QoveryProductionContainerName) { return container.Tag; }
+                    }                    
+                }
+            }
         }
-        catch (Exception e) { Log.Debug(e.Message); if (e.InnerException != null) Log.Debug(e.InnerException.Message); }
+        catch (Exception e) { Log.Debug(e.Message); if (e.InnerException != null) Log.Debug(e.InnerException.Message); return String.Empty; }
+
+        return String.Empty;
     }
 }

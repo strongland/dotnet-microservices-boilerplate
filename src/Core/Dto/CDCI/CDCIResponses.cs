@@ -1,8 +1,9 @@
 ﻿namespace FSH.Core.Dto.CDCI;
 
-public class CreateBackendResponse
-{
+public class CreateBackendResponse {
     public bool EnvironmentExists { get; set; }
+    public bool FoundProductionTag { get; set; }
+    public string BackendEnvironmentId { get; set; }
 }
 
 public class DisableBackendResponse
