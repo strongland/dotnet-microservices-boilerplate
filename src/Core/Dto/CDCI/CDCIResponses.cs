@@ -6,7 +6,7 @@ public class CreateBackendResponse {
     public string BackendEnvironmentId { get; set; }
 }
 
-public class DisableBackendResponse
+public class ToggleStateBackendResponse
 {
     public string EnvironmentName { get; set; }
     public string State { get; set; }

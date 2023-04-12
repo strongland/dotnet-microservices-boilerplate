@@ -4,6 +4,6 @@ namespace FSH.Core.Common;
 
 public interface ICDCIService : ITransientService
 {
-    CreateBackendResponse CreateCustomerBackend(CreateBackendRequest request, CancellationToken cancellationToken);
-    DisableBackendResponse DisableCustomerBackend(DisableBackendRequest request, CancellationToken cancellationToken);
+    CreateBackendResponse CreateBackendInstance(CreateBackendRequest request, CancellationToken cancellationToken);
+    ToggleStateBackendResponse ToggleStateBackendInstance(ToggleStateBackendRequest request, CancellationToken cancellationToken);
 }

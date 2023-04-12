@@ -3,6 +3,7 @@ using FSH.Core.Dto.CDCI;
 using FSH.WebApi.Infrastructure.Common.Settings;
 using FSH.WebApi.Infrastructure.Helpers;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using RestSharp;
 
@@ -12,6 +13,9 @@ public class CDCIService : ICDCIService {
 
     private string QoveryProjectId { get; set; }
     private string QoveryProductionContainerName { get; set; }
+    private string QoveryToken { get; set; }
+    private string ClusterId { get; set; }
+
     private QoveryEnvironmentResult NewEnvironment { get; set; }
     private QoveryContainerResult NewContainer { get; set; }
     private QoveryEnvironmentResult DeployedEnvironment { get; set; }
@@ -19,18 +23,18 @@ public class CDCIService : ICDCIService {
 
     public CDCIService(IConfiguration config) {
         Runtime.CDCI = config.GetSection("CDCISettings").Get<CDCISettings>();
-    }
 
-    public CreateBackendResponse CreateCustomerBackend(CreateBackendRequest request, CancellationToken cancellationToken) {
-
-        //#######################################################################
-        //### PIPELINE CONFIGURATON AND VARIABLES
-        //#######################################################################
-
-        //## THESE VALUES NEEDS TO BE CONFIGURED FOR EACH PROJECT
         QoveryProjectId = "9d0a2ead-2060-47ff-a0fd-1eebaeb2e0f4"; // settings
         QoveryProductionContainerName = "dashboard-backend"; // settings
-        var registryId = "bd834fff-5eb0-4105-992a-e8bbb7cdac24"; // settings
+
+
+        //## DO NOT CHANGE THESE VALUES
+        QoveryToken = "Token qov_7503rXkpWTKaBDbQXUOWJb3EXBMtGqRkVAmgsxOiA5nEWqJWyD0VvOe_1329524952"; // settings
+        ClusterId = "ce5e20e8-fb97-441a-9a54-3c0dcdf8922b"; // settings
+
+    }
+
+    public CreateBackendResponse CreateBackendInstance(CreateBackendRequest request, CancellationToken cancellationToken) {
 
         //## CONTAINER RESOURCES, 1 CPU = 1000, RAM = Megabytes
         var containerCpu = 250; // settings
@@ -40,12 +44,8 @@ public class CDCIService : ICDCIService {
         var minNodes = 1; // settings
         var maxNodes = 1; // settings
 
-        //## DO NOT CHANGE THESE VALUES
-        var qoveryToken = "Token qov_7503rXkpWTKaBDbQXUOWJb3EXBMtGqRkVAmgsxOiA5nEWqJWyD0VvOe_1329524952"; // settings
-        var devopsPAT = "ceetfh5ykqvjfg36t5v3ofzdp2him4vffji6qfd2hfjhzl7tb6ma"; // settings
-        var clusterId = "ce5e20e8-fb97-441a-9a54-3c0dcdf8922b"; // settings
+        var registryId = "bd834fff-5eb0-4105-992a-e8bbb7cdac24"; // settings
         var prodContainerImageName = "dashboard-backend-prod";
-
 
         //#######################################################################
         //### GET LATEST PRODUCTION TAG
@@ -77,7 +77,7 @@ public class CDCIService : ICDCIService {
 
         var newEnv = new QoveryEnvironmentRequest {
             name = request.EnvironmentName,
-            cluster = clusterId,
+            cluster = ClusterId,
             mode = "PRODUCTION"
         };
 
@@ -244,33 +244,61 @@ public class CDCIService : ICDCIService {
         };
     }
 
-    public DisableBackendResponse DisableCustomerBackend(DisableBackendRequest request, CancellationToken cancellationToken) {
-        DisableBackendResponse response = new DisableBackendResponse();
-        try {
-            // Get list of environments
-            var environmentsResult = new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(Method.GET, $"/project/{QoveryProjectId}/environment", null, Runtime.CDCI.QoveryAPIToken).Result;
-            var environmentList = JsonConvert.DeserializeObject<QoveryEnvironmentsResult>(environmentsResult.Content);
-            string environmentName = String.Empty;
+    public ToggleStateBackendResponse ToggleStateBackend(ToggleStateBackendRequest request, CancellationToken cancellationToken) {
+        ToggleStateBackendResponse response = new ToggleStateBackendResponse();
 
-            foreach (var environment in environmentList.Results) {
-                if (environment.Name == request.EnvironmentName) {
-                    environmentName = environment.Name;
+        if (request.Enabled) {
+            try {
+                // Get list of environments
+                var environmentsResult = new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(Method.GET, $"/project/{QoveryProjectId}/environment", null, Runtime.CDCI.QoveryAPIToken).Result;
+                var environmentList = JsonConvert.DeserializeObject<QoveryEnvironmentsResult>(environmentsResult.Content);
+                string environmentName = String.Empty;
 
-                    // Get list of containers
-                    var environmentStopResult = new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(Method.POST, $"/environment/{environment.Id}/stop", null, Runtime.CDCI.QoveryAPIToken).Result;
-                    var environmentStop = JsonConvert.DeserializeObject<QoveryContainerStopResult>(environmentStopResult.Content);
-                    response.EnvironmentName = environmentName;
-                    response.State = environmentStop.State;
-                    response.Message = environmentStop.Message;
+                foreach (var environment in environmentList.Results) {
+                    if (environment.Name == request.EnvironmentName) {
+                        environmentName = environment.Name;
+
+                        // Get list of containers
+                        var environmentStopResult = new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(Method.POST, $"/environment/{environment.Id}/start", null, Runtime.CDCI.QoveryAPIToken).Result;
+                        var environmentStop = JsonConvert.DeserializeObject<QoveryContainerStopResult>(environmentStopResult.Content);
+                        response.EnvironmentName = environmentName;
+                        response.State = environmentStop.State;
+                        response.Message = environmentStop.Message;
+                    }
                 }
             }
+            catch (Exception e) {
+                Log.Debug(e.Message); if (e.InnerException != null) Log.Debug(e.InnerException.Message);
+                response.Message = $"{e.Message}";
+                return response;
+            }
         }
-        catch (Exception e) { 
-            Log.Debug(e.Message); if (e.InnerException != null) Log.Debug(e.InnerException.Message);
-            response.Message = $"{e.Message}";
-            return response; 
-        }
+        else {
+            try {
+                // Get list of environments
+                var environmentsResult = new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(Method.GET, $"/project/{QoveryProjectId}/environment", null, Runtime.CDCI.QoveryAPIToken).Result;
+                var environmentList = JsonConvert.DeserializeObject<QoveryEnvironmentsResult>(environmentsResult.Content);
+                string environmentName = String.Empty;
 
+                foreach (var environment in environmentList.Results) {
+                    if (environment.Name == request.EnvironmentName) {
+                        environmentName = environment.Name;
+
+                        // Get list of containers
+                        var environmentStopResult = new APIClient(Runtime.CDCI.QoveryAPIUrl).QoveryApiCall(Method.POST, $"/environment/{environment.Id}/stop", null, Runtime.CDCI.QoveryAPIToken).Result;
+                        var environmentStop = JsonConvert.DeserializeObject<QoveryContainerStopResult>(environmentStopResult.Content);
+                        response.EnvironmentName = environmentName;
+                        response.State = environmentStop.State;
+                        response.Message = environmentStop.Message;
+                    }
+                }
+            }
+            catch (Exception e) {
+                Log.Debug(e.Message); if (e.InnerException != null) Log.Debug(e.InnerException.Message);
+                response.Message = $"{e.Message}";
+                return response;
+            }
+        }
         return response;
     }
     

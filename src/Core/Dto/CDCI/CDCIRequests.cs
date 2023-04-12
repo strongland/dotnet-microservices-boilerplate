@@ -5,7 +5,8 @@ public class CreateBackendRequest
     public string EnvironmentName { get; set; }
 }
 
-public class DisableBackendRequest
+public class ToggleStateBackendRequest
 {
     public string EnvironmentName { get; set; }
+    public bool Enabled { get; set; }
 }

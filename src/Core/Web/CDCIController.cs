@@ -14,12 +14,12 @@ public class CDCIController : BaseController {
 
     [AllowAnonymous]
     [HttpPost]
-    public CreateBackendResponse CreateCustomerBackend(CreateBackendRequest request, CancellationToken cancellationToken) =>
-        CDCIService.CreateCustomerBackend(request, cancellationToken);
+    public CreateBackendResponse CreateBackendInstance(CreateBackendRequest request, CancellationToken cancellationToken) =>
+        CDCIService.CreateBackendInstance(request, cancellationToken);
 
     [AllowAnonymous]
-    [HttpPost("createcustomerbackend")]
-    public DisableBackendResponse DisableCustomerBackend(DisableBackendRequest request, CancellationToken cancellationToken) =>
-        CDCIService.DisableCustomerBackend(request, cancellationToken);
+    [HttpPost]
+    public ToggleStateBackendResponse ToggleStateBackendInstance(ToggleStateBackendRequest request, CancellationToken cancellationToken) =>
+        CDCIService.ToggleStateBackendInstance(request, cancellationToken);
 
 }
