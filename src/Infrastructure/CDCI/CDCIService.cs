@@ -244,7 +244,7 @@ public class CDCIService : ICDCIService {
         };
     }
 
-    public ToggleStateBackendResponse ToggleStateBackend(ToggleStateBackendRequest request, CancellationToken cancellationToken) {
+    public ToggleStateBackendResponse ToggleStateBackendInstance(ToggleStateBackendRequest request, CancellationToken cancellationToken) {
         ToggleStateBackendResponse response = new ToggleStateBackendResponse();
 
         if (request.Enabled) {
